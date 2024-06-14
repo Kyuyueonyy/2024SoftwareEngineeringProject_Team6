@@ -1,6 +1,6 @@
 # 2024SoftwareEngineeringProject_Team6
 
-📍A Personal Photo Diary
+##📍A Personal Photo Diary
 
 👫Team 6
 
