@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    .media.content-section {
+        display: flex;
+        margin: 20px;
+    }
+
+    .media-body {
+        margin-left: 20px;
+    }
+
+    .rounded-circle.article-img {
+        max-width: 150px;
+        max-height: 150px;
+        border-radius: 50%;
+    }
+
+    .article-metadata {
+        margin-bottom: 10px;
+    }
+
+    .article-content {
+        margin-bottom: 20px;
+    }
+
+    .comments-section {
+        margin: 20px;
+    }
+
+    .comments-section ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    .comments-section ul li {
+        margin-bottom: 10px;
+    }
+
+    .comment-form {
+        margin: 20px;
+    }
+
+    .comment-form .form-group {
+        margin-bottom: 15px;
+    }
+</style>
+
+<article class="media content-section">
+    <img class="rounded-circle article-img" src="{{ url_for('static', filename='uploads/' + post.image_file) }}">
+    <div class="media-body">
+        <div class="article-metadata">
+            <h2>{{ post.title }}</h2>
+            <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }} by {{ post.author.username }}</small>
+        </div>
+        <p class="article-content">{{ post.content }}</p>
+        <p class="article-content"><strong>Keyword:</strong> {{ post.keyword }}</p>
+    </div>
+</article>
+
+<section class="comments-section">
+    <h2>Comments</h2>
+    <ul id="comments-list">
+        {% for comment in post.comments %}
+            <li>
+                <p><strong>{{ comment.author.username }}:</strong> {{ comment.content }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+    <form action="{{ url_for('comment', post_id=post.id) }}" method="post" id="comment-form">
+        <div class="form-group">
+            <textarea name="content" id="content" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</section>
+
+<script>
+    const form = document.getElementById('comment-form');
+    form.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const content = document.getElementById('content').value;
+        const response = await fetch("{{ url_for('comment', post_id=post.id) }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content }),
+        });
+        const data = await response.json();
+        if (response.status === 201) {
+            const commentsList = document.getElementById('comments-list');
+            const newComment = document.createElement('li');
+            newComment.innerHTML = `<p><strong>${data.username}:</strong> ${data.content}</p>`;
+            commentsList.appendChild(newComment);
+            form.reset();
+        } else {
+            alert(data.message);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,556 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+    body {
+        background-color: white;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .profile-header img {
+        border-radius: 50%;
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        margin-bottom: 20px;
+    }
+
+    .profile-header h1 {
+        color: #a23c19;
+    }
+
+    .profile-info {
+        margin-bottom: 20px;
+    }
+
+    .profile-info p {
+        margin: 5px 0;
+        color: #6b4a29;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .form-control {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    .btn-update {
+        background-color: #a23c19;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-update:hover {
+        background-color: #862f14;
+    }
+
+    .profile-posts {
+        margin-top: 40px;
+    }
+
+    .profile-posts h2 {
+        color: #a23c19;
+        margin-bottom: 20px;
+    }
+
+    .post-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    .post-item {
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        padding: 15px;
+        width: 180px;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .post-item img {
+        max-width: 100%;
+        height: 100px;
+        object-fit: cover;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+
+    .post-item h3 {
+        margin: 0 0 10px;
+        color: #6b4a29;
+        font-size: 1.2em;
+        text-align: center;
+    }
+
+    .post-item p {
+        margin: 0 0 10px;
+        color: #333;
+        font-size: 0.9em;
+    }
+
+    .btn-delete, .btn-edit {
+        background-color: #d9534f;
+        color: white;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-delete:hover, .btn-edit:hover {
+        background-color: #c9302c;
+    }
+
+    .btn-edit {
+        background-color: #5bc0de;
+        margin-left: 5px;
+    }
+
+    .btn-edit:hover {
+        background-color: #31b0d5;
+    }
+
+    .popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+    }
+
+    .popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 70%;
+        max-width: 800px;
+        max-height: 80%;
+        overflow-y: auto;
+        text-align: left;
+        position: relative;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .popup-content img {
+        width: 100%;
+        max-height: 300px;
+        object-fit: contain;
+        margin-bottom: 0px;
+    }
+
+    .popup-details {
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .popup-image {
+        flex: 7; /* Adjusted for 7:3 ratio */
+        padding: 10px;
+    }
+
+    .popup-details div:not(.popup-image) {
+        flex: 3; /* Adjusted for 7:3 ratio */
+        padding: 10px;
+    }
+
+    .popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 20px; /* Reduced font size */
+        cursor: pointer;
+        color: #a23c19;
+    }
+
+    .popup-title {
+        text-align: center;
+        color: #6b4a29;
+        font-weight: 700;
+        font-size: 1.2em; /* Reduced font size */
+        margin-bottom: 10px;
+    }
+
+    .popup-keyword, .popup-content-text {
+        margin: 0;
+        color: #333;
+        font-size: 0.8em; /* Reduced font size */
+    }
+
+    .popup-keyword {
+        font-weight: 500;
+        color: #a23c19;
+    }
+
+    .popup-separator {
+        border-top: 2px solid #a23c19; /* 키워드 색상으로 설정 */
+        margin: 10px 0;
+    }
+
+    .popup-content textarea {
+        width: calc(80% - 22px); /* 댓글 입력창 너비 조정 */
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        resize: none;
+        margin-top: 10px;
+        display: inline-block;
+        vertical-align: top;
+        box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+    }
+
+    .popup-content button {
+        background-color: #a23c19;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+        display: inline-block;
+        height: 50px; /* textarea 높이와 맞춤 */
+        vertical-align: top; /* 버튼을 입력창 옆에 배치 */
+        box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+    }
+
+    .popup-content button:hover {
+        background-color: #862f14;
+    }
+
+    .popup-content .comment-section {
+        margin-top: 20px;
+    }
+
+    .popup-content .comment {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .popup-content .comment img {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+    }
+
+    .popup-content .comment p {
+        margin: 0;
+        font-size: 0.9em;
+        color: #333;
+    }
+
+    .login-popup-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+    }
+
+    .login-popup-content {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 50%;
+        max-width: 400px;
+        text-align: center;
+        position: relative;
+        transform: translate(-50%, -50%);
+        top: 50%;
+        left: 50%;
+    }
+
+    .login-popup-close {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #a23c19;
+    }
+
+    .login-popup-content a {
+        display: block;
+        margin: 10px 0;
+        color: #a23c19;
+    }
+
+    .login-popup-content button {
+        background-color: #a23c19;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
+    .login-popup-content button:hover {
+        background-color: #862f14;
+    }
+</style>
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h1>Profile</h1>
+        <img src="{{ image_file }}" alt="Profile Picture" class="profile-img">
+        <div class="profile-info">
+            <p><strong>Name:</strong> {{ current_user.username }}</p>
+            <p><strong>User ID:</strong> {{ current_user.user_id }}</p>
+            <p><strong>Joined on:</strong> {{ current_user.date_joined.strftime('%B %d, %Y') }}</p>
+        </div>
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="form-group">
+                <label for="file-input">Profile<br>Image</label>
+                {{ form.picture(class="form-control", id="file-input") }}
+                <button type="submit" class="btn-update">Update</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="profile-posts">
+        <h2>Your Posts</h2>
+        <div class="post-grid">
+            {% for post in user_posts %}
+                <div class="post-item" onclick="openPopup({{ post.id }});">
+                    <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" alt="Post Image">
+                    <h3>{{ post.title }}</h3>
+                    <p>{{ post.date_posted.strftime('%B %d, %Y') }}</p>
+                    <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" onsubmit="return confirmDelete();">
+                        {{ form.hidden_tag() }}
+                        <button type="submit" class="btn-delete">Delete Post</button>
+                        <button type="button" class="btn-edit" onclick="openEditPopup(event, {{ post.id }})">Edit Post</button>
+                    </form>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="popup-overlay" id="popup" onclick="closePopup(event)">
+    <div class="popup-content" onclick="event.stopPropagation()">
+        <button class="popup-close" onclick="closePopup()">×</button>
+        <div class="popup-details">
+            <div class="popup-image">
+                <img id="popup-image" src="" alt="Post Image">
+            </div>
+            <div>
+                <h2 id="popup-title" class="popup-title"></h2>
+                <div class="popup-separator"></div>
+                <p id="popup-keyword" class="popup-keyword"></p>
+                <div class="popup-separator"></div>
+                <p id="popup-content" class="popup-content-text"></p>
+            </div>
+        </div>
+        <div class="popup-separator"></div>
+        <div id="comments-section" class="comment-section"></div>
+        <div class="popup-separator"></div>
+        <textarea id="comment-input" placeholder="Write a comment..."></textarea>
+        <button onclick="postComment()">Post Comment</button>
+    </div>
+</div>
+
+<div class="popup-overlay" id="edit-popup" onclick="closeEditPopup(event)">
+    <div class="popup-content" onclick="event.stopPropagation()">
+        <button class="popup-close" onclick="closeEditPopup()">×</button>
+        <div class="popup-details">
+            <div class="popup-image">
+                <img id="edit-popup-image" src="" alt="Post Image">
+            </div>
+            <div>
+                <form id="edit-post-form" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="edit-title">Title</label>
+                        <input type="text" id="edit-title" name="title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-content">Content</label>
+                        <textarea id="edit-content" name="content" class="form-control" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-keyword">Keyword</label>
+                        <input type="text" id="edit-keyword" name="keyword" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-photo">Photo</label>
+                        <input type="file" id="edit-photo" name="photo" class="form-control-file">
+                    </div>
+                    <button type="submit" class="btn-upload">Update Post</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="login-popup-overlay" id="login-popup" onclick="closeLoginPopup(event)">
+    <div class="login-popup-content" onclick="event.stopPropagation()">
+        <h2>Please log in to view post</h2>
+        <a href="{{ url_for('login') }}">Go to Login</a>
+    </div>
+</div>
+
+<script>
+    let currentPostId;
+
+    function openPopup(postId) {
+        if (!{{ current_user.is_authenticated | tojson }}) {
+            $('#login-popup').fadeIn();
+            return;
+        }
+
+        $.get(`/post/${postId}`, function(data) {
+            $('#popup-title').text(data.title);
+            $('#popup-image').attr('src', data.image);
+            $('#popup-keyword').text(`#${data.keyword}`);
+            $('#popup-content').text(data.content);
+            $('#popup').fadeIn();
+            currentPostId = postId;
+
+            // Fetch and display comments
+            fetchComments(postId);
+        });
+    }
+
+    function closePopup() {
+        $('#popup').fadeOut();
+    }
+
+    function openEditPopup(event, postId) {
+        event.stopPropagation();
+        currentPostId = postId;
+        $.get(`/post/${postId}`, function(data) {
+            $('#edit-title').val(data.title);
+            $('#edit-content').val(data.content);
+            $('#edit-keyword').val(data.keyword);
+            $('#edit-popup-image').attr('src', data.image);
+            $('#edit-popup').fadeIn();
+        });
+    }
+
+    function closeEditPopup() {
+        $('#edit-popup').fadeOut();
+    }
+
+    function closeLoginPopup() {
+        $('#login-popup').fadeOut();
+    }
+
+    $('#edit-post-form').submit(function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        $.ajax({
+            url: `/post/${currentPostId}/edit`,
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(data) {
+                alert(data.message);
+                location.reload();
+            },
+            error: function(data) {
+                alert(data.responseJSON.message);
+            }
+        });
+    });
+
+    function fetchComments(postId) {
+        const commentsSection = $('#comments-section');
+        commentsSection.empty();
+
+        $.getJSON(`/post/${postId}/comments`, function(data) {
+            data.forEach(comment => {
+                const commentDiv = $('<div>').html(`
+                    <div class="comment">
+                        <p><strong>${comment.username}:</strong> ${comment.content}</p>
+                    </div>
+                `);
+                commentsSection.append(commentDiv);
+            });
+        });
+    }
+
+    function postComment() {
+        const commentInput = $('#comment-input').val();
+        if (commentInput) {
+            $.ajax({
+                url: `/post/${currentPostId}/comment`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ content: commentInput }),
+                success: function(data) {
+                    const newComment = $('<div>').html(`
+                        <div class="comment">
+                            <p><strong>${data.username}:</strong> ${data.content}</p>
+                        </div>
+                    `);
+                    $('#comments-section').append(newComment);
+                    $('#comment-input').val('');
+                }
+            });
+        }
+    }
+
+    function confirmDelete() {
+        return confirm('Are you sure you want to delete this post?');
+    }
+
+    $(document).ready(function() {
+        $('.popup-close').click(function() {
+            $('#popup').fadeOut();
+        });
+
+        $('.login-popup-close').click(function() {
+            $('#login-popup').fadeOut();
+        });
+    });
+</script>
+{% endblock %}

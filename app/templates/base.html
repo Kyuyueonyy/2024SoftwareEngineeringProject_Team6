@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Flask App{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        body {
+            background-color: White;
+            font-family: 'Roboto', sans-serif;
+            padding-top: 60px;
+        }
+
+        nav {
+            background-color: #333;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        nav ul li {
+            display: inline;
+            padding: 14px 20px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            background-color: #575757;
+            border-radius: 5px;
+        }
+
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 70%;
+            max-width: 800px;
+            max-height: 80%;
+            overflow-y: auto;
+            text-align: left;
+            position: relative;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-content img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            margin-bottom: 0px;
+        }
+
+        .popup-details {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .popup-image {
+            flex: 7; /* Adjusted for 7:3 ratio */
+            padding: 10px;
+        }
+
+        .popup-details div:not(.popup-image) {
+            flex: 3; /* Adjusted for 7:3 ratio */
+            padding: 10px;
+        }
+
+        .popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px; /* Reduced font size */
+            cursor: pointer;
+            color: #a23c19;
+        }
+
+        .popup-title {
+            text-align: center;
+            color: #6b4a29;
+            font-weight: 700;
+            font-size: 1.2em; /* Reduced font size */
+            margin-bottom: 10px;
+        }
+
+        .popup-keyword, .popup-content-text {
+            margin: 0;
+            color: #333;
+            font-size: 0.8em; /* Reduced font size */
+        }
+
+        .popup-keyword {
+            font-weight: 500;
+            color: #a23c19;
+        }
+
+        .popup-separator {
+            border-top: 2px solid #a23c19; /* 키워드 색상으로 설정 */
+            margin: 10px 0;
+        }
+
+        .popup-content textarea {
+            width: calc(80% - 22px); /* 댓글 입력창 너비 조정 */
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            margin-top: 10px;
+            display: inline-block;
+            vertical-align: top;
+            box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+        }
+
+        .popup-content button {
+            background-color: #a23c19;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+            height: 50px; /* textarea 높이와 맞춤 */
+            vertical-align: top; /* 버튼을 입력창 옆에 배치 */
+            box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+        }
+
+        .popup-content button:hover {
+            background-color: #862f14;
+        }
+
+        .popup-content .comment-section {
+            margin-top: 20px;
+        }
+
+        .popup-content .comment {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .popup-content .comment p {
+            margin: 0;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .login-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .login-popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            max-width: 400px;
+            text-align: center;
+            position: relative;
+            transform: translate(-50%, -50%);
+            top: 50%;
+            left: 50%;
+        }
+
+        .login-popup-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #a23c19;
+        }
+
+        .login-popup-content a {
+            display: block;
+            margin: 10px 0;
+            color: #a23c19;
+        }
+
+        .login-popup-content button {
+            background-color: #a23c19;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .login-popup-content button:hover {
+            background-color: #862f14;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('home') }}">Home</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                <li><a href="{{ url_for('upload') }}">Upload</a></li>
+                <li><a href="{{ url_for('logout') }}">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Login</a></li>
+                <li><a href="{{ url_for('register') }}">Register</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    {% block search %}{% endblock %}
+    {% block content %}{% endblock %}
+
+    <div class="popup-overlay" id="popup" onclick="closePopup(event)">
+        <div class="popup-content" onclick="event.stopPropagation()">
+            <button class="popup-close" onclick="closePopup()">×</button>
+            <div class="popup-details">
+                <div class="popup-image">
+                    <img id="popup-image" src="" alt="Post Image">
+                </div>
+                <div>
+                    <h2 id="popup-title" class="popup-title"></h2>
+                    <div class="popup-separator"></div>
+                    <p id="popup-keyword" class="popup-keyword"></p>
+                    <div class="popup-separator"></div>
+                    <p id="popup-content" class="popup-content-text"></p>
+                </div>
+            </div>
+            <div class="popup-separator"></div>
+            <div id="comments-section" class="comment-section"></div>
+            <div class="popup-separator"></div>
+            <textarea id="comment-input" placeholder="Write a comment..."></textarea>
+            <button onclick="postComment()">Post Comment</button>
+        </div>
+    </div>
+
+    <div class="login-popup-overlay" id="login-popup" onclick="closeLoginPopup(event)">
+        <div class="login-popup-content" onclick="event.stopPropagation()">
+            <h2>Please log in to view post</h2>
+            <a href="{{ url_for('login') }}">Go to Login</a>
+        </div>
+    </div>
+
+    <script>
+        let currentPostId;
+
+        function openPopup(postId) {
+            if (!{{ current_user.is_authenticated | tojson }}) {
+                $('#login-popup').fadeIn();
+                return;
+            }
+
+            $.get(`/post/${postId}`, function(data) {
+                $('#popup-title').text(data.title);
+                $('#popup-image').attr('src', data.image);
+                $('#popup-keyword').text(`#${data.keyword}`);
+                $('#popup-content').text(data.content);
+                $('#popup').fadeIn();
+                currentPostId = postId;
+
+                // Fetch and display comments
+                fetchComments(postId);
+            });
+        }
+
+        function closePopup() {
+            $('#popup').fadeOut();
+        }
+
+        function closeLoginPopup() {
+            $('#login-popup').fadeOut();
+        }
+
+        function fetchComments(postId) {
+            const commentsSection = $('#comments-section');
+            commentsSection.empty();
+
+            $.getJSON(`/post/${postId}/comments`, function(data) {
+                data.forEach(comment => {
+                    const commentDiv = $('<div>').html(`
+                        <div class="comment">
+                            <p><strong>${comment.username}:</strong> ${comment.content}</p>
+                        </div>
+                    `);
+                    commentsSection.append(commentDiv);
+                });
+            });
+        }
+
+        function postComment() {
+            const commentInput = $('#comment-input').val();
+            if (commentInput) {
+                $.ajax({
+                    url: `/post/${currentPostId}/comment`,
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ content: commentInput }),
+                    success: function(data) {
+                        const newComment = $('<div>').html(`
+                            <div class="comment">
+                                <p><strong>${data.username}:</strong> ${data.content}</p>
+                            </div>
+                        `);
+                        $('#comments-section').append(newComment);
+                        $('#comment-input').val('');
+                    }
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            $('.popup-close').click(function() {
+                $('#popup').fadeOut();
+            });
+
+            $('.login-popup-close').click(function() {
+                $('#login-popup').fadeOut();
+            });
+        });
+    </script>
+</body>
+</html>

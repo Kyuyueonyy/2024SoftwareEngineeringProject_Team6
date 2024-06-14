@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background-color: white;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .register-container {
+        text-align: center;
+        max-width: 400px;
+        margin: 100px auto; /* Adjust margin to center vertically */
+        padding: 20px;
+    }
+
+    .register-container h1 {
+        color: #a23c19;
+        margin-bottom: 20px; /* Add margin to separate from form */
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .form-control-file {
+        width: 100%;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn-register {
+        background-color: #a23c19;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-register:hover {
+        background-color: #862f14;
+    }
+</style>
+
+<div class="register-container">
+    <h1>Register</h1>
+    <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.username.label(class="form-label sr-only") }}
+            {{ form.username(class="form-control", placeholder="사용자명") }}
+        </div>
+        <div class="form-group">
+            {{ form.user_id.label(class="form-label sr-only") }}
+            {{ form.user_id(class="form-control", placeholder="아이디") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-label sr-only") }}
+            {{ form.password(class="form-control", placeholder="비밀번호") }}
+        </div>
+        <div class="form-group">
+            {{ form.confirm_password.label(class="form-label sr-only") }}
+            {{ form.confirm_password(class="form-control", placeholder="비밀번호 확인") }}
+        </div>
+        <div class="form-group">
+            {{ form.picture.label(class="form-label sr-only") }}
+            {{ form.picture(class="form-control-file") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-register") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

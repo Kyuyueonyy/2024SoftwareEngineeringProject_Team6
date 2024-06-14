@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        background-color: white;
+        margin: 0;
+        font-family: Arial, sans-serif;
+    }
+
+    .login-container {
+        text-align: center;
+        max-width: 400px;
+        margin: 100px auto; /* Adjust margin to center vertically */
+        padding: 20px;
+    }
+
+    .login-container h1 {
+        color: #a23c19;
+        margin-bottom: 0;
+    }
+
+    .login-container h2 {
+        color: #6b4a29;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn-login {
+        background-color: #a23c19;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .btn-login:hover {
+        background-color: #862f14;
+    }
+</style>
+
+<div class="login-container">
+    <h1>My Photo Diary</h1>
+    <h2></h2>
+    <form method="POST" action="{{ url_for('login') }}">
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.user_id.label(class="form-label sr-only") }}
+            {{ form.user_id(class="form-control", placeholder="아이디") }}
+        </div>
+        <div class="form-group">
+            {{ form.password.label(class="form-label sr-only") }}
+            {{ form.password(class="form-control", placeholder="비밀번호") }}
+        </div>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-login") }}
+        </div>
+    </form>
+</div>
+{% endblock %}
