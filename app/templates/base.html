@@ -89,12 +89,12 @@
         }
 
         .popup-image {
-            flex: 7; /* Adjusted for 7:3 ratio */
+            flex: 7;
             padding: 10px;
         }
 
         .popup-details div:not(.popup-image) {
-            flex: 3; /* Adjusted for 7:3 ratio */
+            flex: 3;
             padding: 10px;
         }
 
@@ -104,7 +104,7 @@
             right: 10px;
             background: none;
             border: none;
-            font-size: 20px; /* Reduced font size */
+            font-size: 20px;
             cursor: pointer;
             color: #a23c19;
         }
@@ -113,14 +113,14 @@
             text-align: center;
             color: #6b4a29;
             font-weight: 700;
-            font-size: 1.2em; /* Reduced font size */
+            font-size: 1.2em;
             margin-bottom: 10px;
         }
 
         .popup-keyword, .popup-content-text {
             margin: 0;
             color: #333;
-            font-size: 0.8em; /* Reduced font size */
+            font-size: 0.8em;
         }
 
         .popup-keyword {
@@ -129,12 +129,12 @@
         }
 
         .popup-separator {
-            border-top: 2px solid #a23c19; /* 키워드 색상으로 설정 */
+            border-top: 2px solid #a23c19;
             margin: 10px 0;
         }
 
         .popup-content textarea {
-            width: calc(80% - 22px); /* 댓글 입력창 너비 조정 */
+            width: calc(80% - 22px);
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -142,10 +142,10 @@
             margin-top: 10px;
             display: inline-block;
             vertical-align: top;
-            box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+            box-sizing: border-box;
         }
 
-        .popup-content button {
+        .popup-content button.post-btn {
             background-color: #a23c19;
             color: white;
             padding: 10px 20px;
@@ -154,12 +154,12 @@
             cursor: pointer;
             margin-top: 10px;
             display: inline-block;
-            height: 50px; /* textarea 높이와 맞춤 */
-            vertical-align: top; /* 버튼을 입력창 옆에 배치 */
-            box-sizing: border-box; /* 박스 크기를 포함하도록 설정 */
+            height: 50px;
+            vertical-align: top;
+            box-sizing: border-box;
         }
 
-        .popup-content button:hover {
+        .popup-content button.post-btn:hover {
             background-color: #862f14;
         }
 
@@ -179,50 +179,71 @@
             color: #333;
         }
 
-        .login-popup-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+        .popup-content .comment-buttons {
             display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
+            gap: 10px;
+            margin-left: auto;
         }
 
-        .login-popup-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            width: 50%;
-            max-width: 400px;
-            text-align: center;
-            position: relative;
-            transform: translate(-50%, -50%);
+        .popup-content .comment input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .popup-content .comment-actions {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .popup-content .comment-actions button {
+            background-color: #d9534f;
+            color: white;
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-content .comment-actions button:hover {
+            background-color: #c9302c;
+        }
+
+        .popup-content .comment-actions .btn-edit {
+            background-color: #5bc0de;
+            margin-left: 5px;
+            font-size: 0.8em;
+            padding: 5px 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .popup-content .comment-actions .btn-edit:hover {
+            background-color: #31b0d5;
+        }
+
+        #edit-comment-modal {
+            display: none;
+            position: fixed;
             top: 50%;
             left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
         }
 
-        .login-popup-close {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #a23c19;
+        #edit-comment-modal textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
         }
 
-        .login-popup-content a {
-            display: block;
-            margin: 10px 0;
-            color: #a23c19;
-        }
-
-        .login-popup-content button {
+        #edit-comment-modal button {
             background-color: #a23c19;
             color: white;
             padding: 10px 20px;
@@ -232,9 +253,10 @@
             margin-top: 10px;
         }
 
-        .login-popup-content button:hover {
+        #edit-comment-modal button:hover {
             background-color: #862f14;
         }
+        
     </style>
 </head>
 <body>
@@ -274,19 +296,24 @@
             <div id="comments-section" class="comment-section"></div>
             <div class="popup-separator"></div>
             <textarea id="comment-input" placeholder="Write a comment..."></textarea>
-            <button onclick="postComment()">Post Comment</button>
+            <button onclick="postComment()" class="post-btn">Post</button>
+            <div class="comment-actions">
+                <button onclick="toggleCommentSelection()" class="btn btn-secondary">Select Comments</button>
+                <button onclick="deleteSelectedComments()" class="btn btn-danger" style="display: none;" id="delete-selected-btn">Delete</button>
+            </div>
         </div>
     </div>
 
-    <div class="login-popup-overlay" id="login-popup" onclick="closeLoginPopup(event)">
-        <div class="login-popup-content" onclick="event.stopPropagation()">
-            <h2>Please log in to view post</h2>
-            <a href="{{ url_for('login') }}">Go to Login</a>
-        </div>
+    <div id="edit-comment-modal">
+        <h3>Edit Comment</h3>
+        <textarea id="edit-comment-input" class="form-control"></textarea>
+        <button onclick="saveComment()" class="btn btn-primary">Save</button>
+        <button onclick="closeEditCommentModal()" class="btn btn-secondary">Cancel</button>
     </div>
 
     <script>
         let currentPostId;
+        let editCommentId = null;
 
         function openPopup(postId) {
             if (!{{ current_user.is_authenticated | tojson }}) {
@@ -321,35 +348,111 @@
 
             $.getJSON(`/post/${postId}/comments`, function(data) {
                 data.forEach(comment => {
-                    const commentDiv = $('<div>').html(`
-                        <div class="comment">
-                            <p><strong>${comment.username}:</strong> ${comment.content}</p>
+                    const commentDiv = $(`
+                        <div class="comment" id="comment-${comment.id}">
+                            ${comment.username === '{{ current_user.username }}' ? `<input type="checkbox" class="comment-checkbox" data-comment-id="${comment.id}" style="display: none;">` : ''}
+                            <p><strong>${comment.username}:</strong> <span id="comment-content-${comment.id}">${comment.content}</span></p>
+                            ${comment.username === '{{ current_user.username }}' ? `<div class="comment-buttons">
+                                <button onclick="editComment(${comment.id})" class="btn-edit">Edit</button>
+                            </div>` : ''}
                         </div>
                     `);
                     commentsSection.append(commentDiv);
                 });
+                $('.comment-actions').show();
             });
         }
 
         function postComment() {
             const commentInput = $('#comment-input').val();
             if (commentInput) {
+                const url = editCommentId ? `/post/${currentPostId}/comment/${editCommentId}/edit` : `/post/${currentPostId}/comment`;
+                const method = editCommentId ? 'POST' : 'POST';
                 $.ajax({
-                    url: `/post/${currentPostId}/comment`,
-                    type: 'POST',
+                    url: url,
+                    type: method,
                     contentType: 'application/json',
                     data: JSON.stringify({ content: commentInput }),
                     success: function(data) {
-                        const newComment = $('<div>').html(`
-                            <div class="comment">
-                                <p><strong>${data.username}:</strong> ${data.content}</p>
-                            </div>
-                        `);
-                        $('#comments-section').append(newComment);
+                        if (editCommentId) {
+                            $(`#comment-content-${editCommentId}`).text(data.content);
+                        } else {
+                            const newComment = $(`
+                                <div class="comment" id="comment-${data.id}">
+                                    <input type="checkbox" class="comment-checkbox" data-comment-id="${data.id}" style="display: none;">
+                                    <p><strong>${data.username}:</strong> <span id="comment-content-${data.id}">${data.content}</span></p>
+                                    <div class="comment-buttons">
+                                        <button onclick="editComment(${data.id})" class="btn-edit">Edit</button>
+                                    </div>
+                                </div>
+                            `);
+                            $('#comments-section').append(newComment);
+                        }
                         $('#comment-input').val('');
+                        editCommentId = null;
                     }
                 });
             }
+        }
+
+        function editComment(commentId) {
+            const content = $(`#comment-content-${commentId}`).text();
+            $('#edit-comment-input').val(content);
+            editCommentId = commentId;
+            $('#edit-comment-modal').fadeIn();
+        }
+
+        function saveComment() {
+            const content = $('#edit-comment-input').val();
+            $.ajax({
+                url: `/post/${currentPostId}/comment/${editCommentId}/edit`,
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ content: content }),
+                success: function(data) {
+                    $(`#comment-content-${editCommentId}`).text(data.content);
+                    closeEditCommentModal();
+                },
+                error: function(data) {
+                    alert(data.responseJSON.message);
+                }
+            });
+        }
+
+        function closeEditCommentModal() {
+            $('#edit-comment-modal').fadeOut();
+            editCommentId = null;
+        }
+
+        function toggleCommentSelection() {
+            const checkboxes = document.querySelectorAll('.comment-checkbox');
+            const deleteBtn = document.getElementById('delete-selected-btn');
+            const editBtns = document.querySelectorAll('.comment-buttons');
+            checkboxes.forEach(checkbox => {
+                checkbox.style.display = checkbox.style.display === 'none' ? 'inline' : 'none';
+            });
+            editBtns.forEach(btn => {
+                btn.style.display = btn.style.display === 'none' ? 'flex' : 'none';
+            });
+            deleteBtn.style.display = deleteBtn.style.display === 'none' ? 'inline' : 'none';
+        }
+
+        function deleteSelectedComments() {
+            const checkboxes = document.querySelectorAll('.comment-checkbox:checked');
+            const commentIds = Array.from(checkboxes).map(cb => cb.getAttribute('data-comment-id'));
+
+            commentIds.forEach(commentId => {
+                $.ajax({
+                    url: `/post/${currentPostId}/comment/${commentId}/delete`,
+                    type: 'POST',
+                    success: function() {
+                        $(`#comment-${commentId}`).remove();
+                    },
+                    error: function(data) {
+                        alert(data.responseJSON.message);
+                    }
+                });
+            });
         }
 
         $(document).ready(function() {
