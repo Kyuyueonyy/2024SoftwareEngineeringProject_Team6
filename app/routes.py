@@ -126,6 +126,7 @@ def comment(post_id):
         db.session.add(comment)
         db.session.commit()
         return jsonify({
+            'id': comment.id,
             'message': 'Comment added successfully.',
             'username': current_user.username,
             'content': content
@@ -137,6 +138,7 @@ def get_comments(post_id):
     post = Post.query.get_or_404(post_id)
     comments = Comment.query.filter_by(post_id=post.id).all()
     comments_data = [{
+        'id': comment.id,
         'username': User.query.get(comment.user_id).username,
         'content': comment.content
     } for comment in comments]
@@ -165,7 +167,7 @@ def get_post_details(post_id):
         'image': url_for('static', filename='uploads/' + post.image_file),
         'keyword': post.keyword,
         'content': post.content,
-        'comments': [{'username': User.query.get(comment.user_id).username, 'content': comment.content} for comment in post.comments]
+        'comments': [{'id': comment.id, 'username': User.query.get(comment.user_id).username, 'content': comment.content} for comment in post.comments]
     })
 
 @app.route("/post/<int:post_id>/edit", methods=['POST'])
@@ -189,3 +191,26 @@ def edit_post(post_id):
 
     db.session.commit()
     return jsonify({'message': 'Your post has been updated!'}), 200
+
+@app.route("/post/<int:post_id>/comment/<int:comment_id>/delete", methods=['POST'])
+@login_required
+def delete_comment(post_id, comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id:
+        abort(403)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'message': '댓글이 삭제되었습니다.'}), 200
+
+@app.route("/post/<int:post_id>/comment/<int:comment_id>/edit", methods=['POST'])
+@login_required
+def edit_comment(post_id, comment_id):
+    comment = Comment.query.get_or_404(comment_id)
+    if comment.user_id != current_user.id:
+        abort(403)
+    content = request.json.get('content')
+    if content:
+        comment.content = content
+        db.session.commit()
+        return jsonify({'message': '댓글이 수정되었습니다.', 'content': content}), 200
+    return jsonify({'message': '내용이 비어 있을 수 없습니다.'}), 400
