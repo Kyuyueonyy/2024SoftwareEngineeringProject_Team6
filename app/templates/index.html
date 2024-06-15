@@ -144,8 +144,8 @@
             <div class="post-item" onclick="openPopup({{ post.id }});">
                 <img src="{{ url_for('static', filename='uploads/' + post.image_file) }}" alt="{{ post.title }}">
                 <h2>{{ post.title }}</h2>
-                <h3 class="keyword"><strong>#</strong> {{ post.keyword }}</h3>
-                <p><strong>Date </strong> {{ post.date_posted.strftime('%B %d, %Y') }}</p>
+                <h3 class="keyword"><strong># {{ post.keyword }}</strong></h3>
+                <p><strong>{{ post.date_posted.strftime('%B %d, %Y') }}</strong></p>
             </div>
         {% endfor %}
     </div>
