@@ -47,3 +47,7 @@ class SearchForm(FlaskForm):
     search = StringField('Search', validators=[DataRequired()])
     search_by = SelectField('Search By', choices=[('title', 'Title'), ('keyword', 'Keyword'), ('username', 'Username')])
     submit = SubmitField('Search')
+
+class EditCommentForm(FlaskForm):
+    content = StringField('Content', validators=[DataRequired()])
+    submit = SubmitField('Update Comment')
