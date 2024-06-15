@@ -35,6 +35,16 @@
 
     .comments-section ul li {
         margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .comment-buttons {
+        display: flex;
+        gap: 10px;
+        margin-left: auto;
+        display: none; /* Initially hide the edit buttons */
     }
 
     .comment-form {
@@ -43,6 +53,21 @@
 
     .comment-form .form-group {
         margin-bottom: 15px;
+    }
+
+    .btn-edit {
+        background-color: #5bc0de;
+        margin-left: 5px;
+        font-size: 0.8em;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #31b0d5;
     }
 </style>
 
@@ -62,11 +87,21 @@
     <h2>Comments</h2>
     <ul id="comments-list">
         {% for comment in post.comments %}
-            <li>
-                <p><strong>{{ comment.author.username }}:</strong> {{ comment.content }}</p>
+            <li id="comment-{{ comment.id }}">
+                {% if comment.author == current_user %}
+                    <input type="checkbox" class="comment-checkbox" data-comment-id="{{ comment.id }}" style="display: none;">
+                {% endif %}
+                <p><strong>{{ comment.author.username }}:</strong> <span id="comment-content-{{ comment.id }}">{{ comment.content }}</span></p>
+                {% if comment.author == current_user %}
+                <div class="comment-buttons">
+                    <button onclick="editComment({{ comment.id }})" class="btn-edit">Edit</button>
+                </div>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>
+    <button onclick="toggleCommentSelection()" class="btn btn-secondary">Select Comments</button>
+    <button onclick="deleteSelectedComments()" class="btn btn-danger" style="display: none;" id="delete-selected-btn">Delete</button>
     <form action="{{ url_for('comment', post_id=post.id) }}" method="post" id="comment-form">
         <div class="form-group">
             <textarea name="content" id="content" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
@@ -75,28 +110,123 @@
     </form>
 </section>
 
+<div id="edit-comment-modal" style="display:none;">
+    <h3>Edit Comment</h3>
+    <textarea id="edit-comment-input" class="form-control"></textarea>
+    <button onclick="saveComment()" class="btn btn-primary">Save</button>
+    <button onclick="closeEditCommentModal()" class="btn btn-secondary">Cancel</button>
+</div>
+
 <script>
-    const form = document.getElementById('comment-form');
-    form.addEventListener('submit', async function(event) {
+    let editCommentId = null;
+
+    document.getElementById('comment-form').addEventListener('submit', function(event) {
         event.preventDefault();
         const content = document.getElementById('content').value;
-        const response = await fetch("{{ url_for('comment', post_id=post.id) }}", {
+        const postId = {{ post.id }};
+        fetch(`/post/${postId}/comment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ content }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                const newComment = document.createElement('li');
+                newComment.id = `comment-${data.id}`;
+                newComment.innerHTML = `
+                    <input type="checkbox" class="comment-checkbox" data-comment-id="${data.id}" style="display: none;">
+                    <p><strong>${data.username}:</strong> <span id="comment-content-${data.id}">${data.content}</span></p>
+                    <div class="comment-buttons">
+                        <button onclick="editComment(${data.id})" class="btn-edit">Edit</button>
+                    </div>
+                `;
+                document.getElementById('comments-list').appendChild(newComment);
+                document.getElementById('content').value = '';
+            } else {
+                alert(data.message);
+            }
         });
-        const data = await response.json();
-        if (response.status === 201) {
-            const commentsList = document.getElementById('comments-list');
-            const newComment = document.createElement('li');
-            newComment.innerHTML = `<p><strong>${data.username}:</strong> ${data.content}</p>`;
-            commentsList.appendChild(newComment);
-            form.reset();
-        } else {
-            alert(data.message);
-        }
     });
+
+    function editComment(commentId) {
+        const content = document.getElementById(`comment-content-${commentId}`).innerText;
+        document.getElementById('edit-comment-input').value = content;
+        editCommentId = commentId;
+        document.getElementById('edit-comment-modal').style.display = 'block';
+    }
+
+    function saveComment() {
+        const content = document.getElementById('edit-comment-input').value;
+        const postId = {{ post.id }};
+        fetch(`/post/${postId}/comment/${editCommentId}/edit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ content: content }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                document.getElementById(`comment-content-${editCommentId}`).innerText = data.content;
+                closeEditCommentModal();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+
+    function closeEditCommentModal() {
+        document.getElementById('edit-comment-modal').style.display = 'none';
+        editCommentId = null;
+    }
+
+    function toggleCommentSelection() {
+        const checkboxes = document.querySelectorAll('.comment-checkbox');
+        const deleteBtn = document.getElementById('delete-selected-btn');
+        const editBtns = document.querySelectorAll('.comment-buttons');
+        checkboxes.forEach(checkbox => {
+            checkbox.style.display = checkbox.style.display === 'none' ? 'inline' : 'none';
+        });
+        editBtns.forEach(btn => {
+            btn.style.display = btn.style.display === 'none' ? 'flex' : 'none';
+        });
+        deleteBtn.style.display = deleteBtn.style.display === 'none' ? 'inline' : 'none';
+    }
+
+    function deleteSelectedComments() {
+        const checkboxes = document.querySelectorAll('.comment-checkbox:checked');
+        const commentIds = Array.from(checkboxes).map(checkbox => checkbox.getAttribute('data-comment-id'));
+        const postId = {{ post.id }};
+        commentIds.forEach(commentId => {
+            fetch(`/post/${postId}/comment/${commentId}/delete`, {
+                method: 'POST',
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById(`comment-${commentId}`).remove();
+                } else {
+                    response.json().then(data => alert(data.message));
+                }
+            });
+        });
+    }
+
+    function deleteComment(commentId) {
+        const postId = {{ post.id }};
+        fetch(`/post/${postId}/comment/${commentId}/delete`, {
+            method: 'POST',
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById(`comment-${commentId}`).remove();
+            } else {
+                response.json().then(data => alert(data.message));
+            }
+        });
+    }
 </script>
 {% endblock %}
